@@ -1,10 +1,12 @@
 package main
 
 import (
+	"crypto/tls"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/go-ping/ping"
@@ -30,6 +32,9 @@ func getaddress(dns string) (string, error) {
 }
 
 func main() {
+	const trimwhite = " \n"
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+
 	argLength := len(os.Args[1:])
 	if argLength < 1 {
 		log.Fatal("dns must be defined")
@@ -44,15 +49,18 @@ func main() {
 			panic(err)
 		}
 
-		log.Println(pinger.IPAddr())
+		dnsadd := strings.Trim(pinger.IPAddr().IP.String(), trimwhite)
+		log.Println(dnsadd)
 
 		myadd, err := getaddress("https://checkip.amazonaws.com/")
 
 		if err == nil {
-			if myadd == pinger.IPAddr().String() {
+			myadd = strings.Trim(myadd, trimwhite)
+			if myadd == dnsadd {
 				log.Println("The ip address belongs to the dns")
 			} else {
 				log.Println("The ip address does not belong to the dns")
+				log.Println("ALERT")
 			}
 		} else {
 			log.Println("Error while quering ip address: " + err.Error())

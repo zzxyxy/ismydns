@@ -1,3 +1,6 @@
 all:
 	go build
-	./ismydns zxyxyhome.duckdns.org
+	./ismydns zxyxycs.duckdns.org
+
+docker:
+	docker build -t zxyxy/ismydns:0.2.0 .
